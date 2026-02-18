@@ -1,0 +1,36 @@
+import 'package:file_picker/file_picker.dart';
+import '../../domain/entities/pdf_document.dart';
+import '../../domain/repositories/pdf_repository.dart';
+import '../datasources/local_pdf_datasource.dart';
+
+class PdfRepositoryImpl implements PdfRepository {
+  final LocalPdfDatasource _datasource;
+
+  const PdfRepositoryImpl(this._datasource);
+
+  @override
+  Future<List<PdfDocument>> getRecentDocuments() =>
+      _datasource.getRecentDocuments();
+
+  @override
+  Future<void> saveDocument(PdfDocument document) =>
+      _datasource.saveDocument(document);
+
+  @override
+  Future<void> removeDocument(String path) =>
+      _datasource.removeDocument(path);
+
+  @override
+  Future<void> updateProgress(String path, int lastPage, int totalPages) =>
+      _datasource.updateProgress(path, lastPage, totalPages);
+
+  @override
+  Future<String?> pickPdfFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: false,
+    );
+    return result?.files.single.path;
+  }
+}
