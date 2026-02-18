@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:pdfrx/pdfrx.dart' hide PdfDocument;
 import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
