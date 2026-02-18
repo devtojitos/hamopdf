@@ -41,7 +41,6 @@ class _ReaderPageState extends State<ReaderPage> {
   @override
   void dispose() {
     _saveProgress();
-    _controller.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -208,8 +207,9 @@ class _BottomBar extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.chevron_left,
                       color: Colors.white, size: 28),
-                  onPressed:
-                      hasPrev ? () => controller.goToPreviousPage() : null,
+                  onPressed: hasPrev
+                      ? () => controller.goToPage(pageNumber: currentPage - 1)
+                      : null,
                   tooltip: 'Previous page',
                 ),
                 Expanded(
@@ -225,7 +225,9 @@ class _BottomBar extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.chevron_right,
                       color: Colors.white, size: 28),
-                  onPressed: hasNext ? () => controller.goToNextPage() : null,
+                  onPressed: hasNext
+                      ? () => controller.goToPage(pageNumber: currentPage + 1)
+                      : null,
                   tooltip: 'Next page',
                 ),
               ],
