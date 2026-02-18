@@ -10,7 +10,9 @@ import 'home/home_controller.dart';
 import 'home/home_page.dart';
 
 class HamoPdfApp extends StatelessWidget {
-  const HamoPdfApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  const HamoPdfApp({super.key, required this.navigatorKey});
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,7 @@ class HamoPdfApp extends StatelessWidget {
       child: MaterialApp(
         title: 'HamoPDF',
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         themeMode: ThemeMode.system,
