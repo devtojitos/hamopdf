@@ -1,8 +1,12 @@
 package web.app.hamopdf.hamopdf
 
+import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -29,6 +33,15 @@ class MainActivity : FlutterActivity() {
                     "getInitialFile" -> {
                         result.success(pendingFilePath)
                         pendingFilePath = null
+                    }
+                    "saveToDownloads" -> {
+                        val sourcePath = call.argument<String>("sourcePath")
+                        val fileName = call.argument<String>("fileName")
+                        if (sourcePath != null && fileName != null) {
+                            result.success(saveToDownloads(sourcePath, fileName))
+                        } else {
+                            result.error("INVALID_ARGS", "sourcePath and fileName are required", null)
+                        }
                     }
                     else -> result.notImplemented()
                 }
@@ -89,6 +102,42 @@ class MainActivity : FlutterActivity() {
             }
         } catch (e: Exception) {
             uri.lastPathSegment
+        }
+    }
+
+    private fun saveToDownloads(sourcePath: String, fileName: String): Boolean {
+        return try {
+            val source = File(sourcePath)
+            if (!source.exists()) return false
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ — no storage permission needed
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+                val uri = contentResolver.insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
+                ) ?: return false
+                contentResolver.openOutputStream(uri)?.use { output ->
+                    source.inputStream().use { input -> input.copyTo(output) }
+                }
+                values.clear()
+                values.put(MediaStore.Downloads.IS_PENDING, 0)
+                contentResolver.update(uri, values, null, null)
+                true
+            } else {
+                // Android 9 and below — write directly to Downloads directory
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS
+                )
+                downloadsDir.mkdirs()
+                source.copyTo(File(downloadsDir, fileName), overwrite = true)
+                true
+            }
+        } catch (e: Exception) {
+            false
         }
     }
 }

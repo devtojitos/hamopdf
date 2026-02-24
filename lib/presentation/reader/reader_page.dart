@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
 
+const _intentChannel = MethodChannel('web.app.hamopdf/intent');
+
 class ReaderPage extends StatefulWidget {
   final PdfDocument document;
 
@@ -57,6 +59,28 @@ class _ReaderPageState extends State<ReaderPage> {
 
   void _toggleControls() => setState(() => _showControls = !_showControls);
 
+  Future<void> _downloadFile() async {
+    try {
+      final result = await _intentChannel.invokeMethod<bool>(
+        'saveToDownloads',
+        {'sourcePath': widget.document.path, 'fileName': widget.document.name},
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result == true ? 'Saved to Downloads' : 'Download failed',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download failed')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -95,6 +119,7 @@ class _ReaderPageState extends State<ReaderPage> {
                 child: _TopBar(
                   title: widget.document.name,
                   onBack: () => Navigator.pop(context),
+                  onDownload: _downloadFile,
                 ),
               ),
 
@@ -125,8 +150,13 @@ class _ReaderPageState extends State<ReaderPage> {
 class _TopBar extends StatelessWidget {
   final String title;
   final VoidCallback onBack;
+  final VoidCallback? onDownload;
 
-  const _TopBar({required this.title, required this.onBack});
+  const _TopBar({
+    required this.title,
+    required this.onBack,
+    this.onDownload,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +189,14 @@ class _TopBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
+            actions: [
+              if (onDownload != null)
+                IconButton(
+                  icon: const Icon(Icons.download),
+                  onPressed: onDownload,
+                  tooltip: 'Download to Downloads folder',
+                ),
+            ],
           ),
         ),
       ),
