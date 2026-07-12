@@ -1,11 +1,26 @@
 import 'dart:convert';
 
+/// The kind of document a [PdfDocument] entry points to.
+enum DocType {
+  pdf,
+  docx;
+
+  static DocType fromExtension(String path) {
+    return path.toLowerCase().endsWith('.docx') ? DocType.docx : DocType.pdf;
+  }
+
+  static DocType fromName(String? name) {
+    return name == DocType.docx.name ? DocType.docx : DocType.pdf;
+  }
+}
+
 class PdfDocument {
   final String path;
   final String name;
   final DateTime lastOpened;
   final int lastPage;
   final int totalPages;
+  final DocType type;
 
   const PdfDocument({
     required this.path,
@@ -13,6 +28,7 @@ class PdfDocument {
     required this.lastOpened,
     this.lastPage = 0,
     this.totalPages = 0,
+    this.type = DocType.pdf,
   });
 
   double get progress =>
@@ -24,6 +40,7 @@ class PdfDocument {
     DateTime? lastOpened,
     int? lastPage,
     int? totalPages,
+    DocType? type,
   }) {
     return PdfDocument(
       path: path ?? this.path,
@@ -31,6 +48,7 @@ class PdfDocument {
       lastOpened: lastOpened ?? this.lastOpened,
       lastPage: lastPage ?? this.lastPage,
       totalPages: totalPages ?? this.totalPages,
+      type: type ?? this.type,
     );
   }
 
@@ -40,6 +58,7 @@ class PdfDocument {
         'lastOpened': lastOpened.toIso8601String(),
         'lastPage': lastPage,
         'totalPages': totalPages,
+        'type': type.name,
       };
 
   factory PdfDocument.fromJson(Map<String, dynamic> json) => PdfDocument(
@@ -48,6 +67,7 @@ class PdfDocument {
         lastOpened: DateTime.parse(json['lastOpened'] as String),
         lastPage: (json['lastPage'] as int?) ?? 0,
         totalPages: (json['totalPages'] as int?) ?? 0,
+        type: DocType.fromName(json['type'] as String?),
       );
 
   String toJsonString() => jsonEncode(toJson());

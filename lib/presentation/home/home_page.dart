@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
+import '../reader/docx_reader_page.dart';
 import '../reader/reader_page.dart';
 import 'home_controller.dart';
 
@@ -16,7 +17,7 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.folder_open_outlined),
-            tooltip: 'Open PDF',
+            tooltip: 'Open document',
             onPressed: () => _pickAndOpen(context),
           ),
         ],
@@ -45,7 +46,7 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _pickAndOpen(context),
         icon: const Icon(Icons.add),
-        label: const Text('Open PDF'),
+        label: const Text('Open document'),
       ),
     );
   }
@@ -59,9 +60,12 @@ class HomePage extends StatelessWidget {
   }
 
   void _openDocument(BuildContext context, PdfDocument doc) {
+    final page = doc.type == DocType.docx
+        ? DocxReaderPage(document: doc)
+        : ReaderPage(document: doc);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ReaderPage(document: doc)),
+      MaterialPageRoute(builder: (_) => page),
     ).then((_) {
       if (context.mounted) context.read<HomeController>().loadRecents();
     });
@@ -108,11 +112,11 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.picture_as_pdf_outlined,
                 size: 80, color: cs.primary.withAlpha(100)),
             const SizedBox(height: 20),
-            Text('No PDFs yet',
+            Text('No documents yet',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Tap the button below to browse and open a PDF file.',
+              'Tap the button below to browse and open a PDF or DOCX file.',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
@@ -123,7 +127,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onOpen,
               icon: const Icon(Icons.folder_open),
-              label: const Text('Open PDF'),
+              label: const Text('Open document'),
             ),
           ],
         ),
@@ -221,8 +225,13 @@ class _PdfCard extends StatelessWidget {
                   color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.picture_as_pdf,
-                    color: cs.onPrimaryContainer, size: 26),
+                child: Icon(
+                  doc.type == DocType.docx
+                      ? Icons.description
+                      : Icons.picture_as_pdf,
+                  color: cs.onPrimaryContainer,
+                  size: 26,
+                ),
               ),
               const SizedBox(width: 12),
               // Info

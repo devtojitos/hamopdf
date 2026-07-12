@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/pdf_document.dart';
+import '../../domain/usecases/extract_docx_text_usecase.dart';
 import '../../domain/usecases/get_recent_pdfs_usecase.dart';
 import '../../domain/usecases/pick_pdf_usecase.dart';
 import '../../domain/usecases/remove_pdf_usecase.dart';
@@ -10,16 +11,19 @@ class HomeController extends ChangeNotifier {
   final PickPdfUsecase _pickPdf;
   final RemovePdfUsecase _removePdf;
   final UpdateProgressUsecase _updateProgress;
+  final ExtractDocxTextUsecase _extractDocxText;
 
   HomeController({
     required GetRecentPdfsUsecase getRecentPdfs,
     required PickPdfUsecase pickPdf,
     required RemovePdfUsecase removePdf,
     required UpdateProgressUsecase updateProgress,
+    required ExtractDocxTextUsecase extractDocxText,
   })  : _getRecentPdfs = getRecentPdfs,
         _pickPdf = pickPdf,
         _removePdf = removePdf,
-        _updateProgress = updateProgress;
+        _updateProgress = updateProgress,
+        _extractDocxText = extractDocxText;
 
   List<PdfDocument> _recents = [];
   bool _loading = false;
@@ -65,4 +69,7 @@ class HomeController extends ChangeNotifier {
     await _updateProgress(path, lastPage, totalPages);
     await loadRecents();
   }
+
+  /// Extracts the plain-text content of a `.docx` document.
+  Future<String> extractDocxText(String path) => _extractDocxText(path);
 }
