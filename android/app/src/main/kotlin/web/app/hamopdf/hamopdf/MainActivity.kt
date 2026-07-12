@@ -56,7 +56,7 @@ class MainActivity : FlutterActivity() {
         val uri = intent.data ?: return null
         return when (uri.scheme) {
             "file" -> uri.path
-            "content" -> copyContentToCache(uri)
+            "content" -> copyContentToCache(uri, intent.type)
             else -> null
         }
     }
@@ -64,10 +64,13 @@ class MainActivity : FlutterActivity() {
     /**
      * Copies a content:// URI (used by WhatsApp and most modern apps) into
      * the app's cache directory so Flutter can open it as a plain file path.
+     *
+     * The cached file name keeps the original extension (or one derived from
+     * [mimeType]) so Flutter can route to the correct reader by type.
      */
-    private fun copyContentToCache(uri: Uri): String? {
+    private fun copyContentToCache(uri: Uri, mimeType: String?): String? {
         return try {
-            val fileName = queryDisplayName(uri) ?: "document.pdf"
+            val fileName = queryDisplayName(uri) ?: "document${extensionFor(mimeType)}"
             val dest = File(cacheDir, "shared_$fileName")
             contentResolver.openInputStream(uri)?.use { input ->
                 FileOutputStream(dest).use { output ->
@@ -78,6 +81,12 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /** Picks a file extension for the fallback name based on the shared MIME type. */
+    private fun extensionFor(mimeType: String?): String = when (mimeType) {
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> ".docx"
+        else -> ".pdf"
     }
 
     private fun queryDisplayName(uri: Uri): String? {
