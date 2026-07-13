@@ -1,3 +1,4 @@
+import '../entities/docx_content.dart';
 import '../entities/pdf_document.dart';
 
 abstract class PdfRepository {
@@ -12,4 +13,8 @@ abstract class PdfRepository {
 
   /// Extracts the plain text content of a `.docx` file at [path].
   Future<String> extractDocxText(String path);
+
+  /// Parses a `.docx` file at [path] into a formatted [DocxContent] tree
+  /// (paragraphs, runs, lists, tables and inline images).
+  Future<DocxContent> parseDocx(String path);
 }

@@ -1,9 +1,15 @@
 import 'dart:io';
 import 'package:docx_to_text/docx_to_text.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import '../../domain/entities/docx_content.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../../domain/repositories/pdf_repository.dart';
+import '../datasources/docx_parser.dart';
 import '../datasources/local_pdf_datasource.dart';
+
+/// Runs off the UI isolate via [compute]; must be a top-level function.
+DocxContent _parseDocxBytes(Uint8List bytes) => DocxParser().parse(bytes);
 
 class PdfRepositoryImpl implements PdfRepository {
   final LocalPdfDatasource _datasource;
@@ -40,5 +46,11 @@ class PdfRepositoryImpl implements PdfRepository {
   Future<String> extractDocxText(String path) async {
     final bytes = await File(path).readAsBytes();
     return docxToText(bytes, handleNumbering: true);
+  }
+
+  @override
+  Future<DocxContent> parseDocx(String path) async {
+    final bytes = await File(path).readAsBytes();
+    return compute(_parseDocxBytes, bytes);
   }
 }
