@@ -18,11 +18,16 @@ dependencies:
   provider: ^6.1.0
   archive: ^3.6.1
   xml: ^6.5.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
 flutter:
   uses-material-design: true
