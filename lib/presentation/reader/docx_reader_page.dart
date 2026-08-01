@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/docx_content.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
+import 'download_button.dart';
 
 /// Renders a `.docx` document as a formatted, Word-like page.
 ///
@@ -62,6 +63,7 @@ class _DocxReaderPageState extends State<DocxReaderPage> {
             tooltip: 'Larger text',
             onPressed: () => _changeScale(0.1),
           ),
+          DownloadButton(document: widget.document),
         ],
       ),
       body: FutureBuilder<DocxContent>(

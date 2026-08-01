@@ -3,14 +3,23 @@ import 'dart:convert';
 /// The kind of document a [PdfDocument] entry points to.
 enum DocType {
   pdf,
-  docx;
+  docx,
+  markdown;
 
   static DocType fromExtension(String path) {
-    return path.toLowerCase().endsWith('.docx') ? DocType.docx : DocType.pdf;
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.docx')) return DocType.docx;
+    if (lower.endsWith('.md') || lower.endsWith('.markdown')) {
+      return DocType.markdown;
+    }
+    return DocType.pdf;
   }
 
   static DocType fromName(String? name) {
-    return name == DocType.docx.name ? DocType.docx : DocType.pdf;
+    return DocType.values.firstWhere(
+      (t) => t.name == name,
+      orElse: () => DocType.pdf,
+    );
   }
 }
 

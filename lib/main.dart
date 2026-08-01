@@ -8,8 +8,7 @@ import 'domain/entities/pdf_document.dart';
 import 'domain/repositories/pdf_repository.dart';
 import 'presentation/app.dart';
 import 'presentation/home/home_controller.dart';
-import 'presentation/reader/docx_reader_page.dart';
-import 'presentation/reader/reader_page.dart';
+import 'presentation/reader/reader_route.dart';
 
 const _intentChannel = MethodChannel('web.app.hamopdf/intent');
 final _navigatorKey = GlobalKey<NavigatorState>();
@@ -58,12 +57,8 @@ Future<void> _openExternalFile(String path, PdfRepository repo) async {
 
   await repo.saveDocument(doc);
 
-  final page = type == DocType.docx
-      ? DocxReaderPage(document: doc)
-      : ReaderPage(document: doc);
-
   _navigatorKey.currentState?.push(
-    MaterialPageRoute(builder: (_) => page),
+    MaterialPageRoute(builder: (_) => readerPageFor(doc)),
   ).then((_) {
     // Refresh the recents list when the reader is closed.
     _navigatorKey.currentContext

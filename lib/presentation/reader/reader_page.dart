@@ -4,6 +4,7 @@ import 'package:pdfrx/pdfrx.dart' hide PdfDocument;
 import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
+import 'download_button.dart';
 
 class ReaderPage extends StatefulWidget {
   final PdfDocument document;
@@ -93,7 +94,7 @@ class _ReaderPageState extends State<ReaderPage> {
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
                 child: _TopBar(
-                  title: widget.document.name,
+                  document: widget.document,
                   onBack: () => Navigator.pop(context),
                 ),
               ),
@@ -123,10 +124,10 @@ class _ReaderPageState extends State<ReaderPage> {
 // ---------------------------------------------------------------------------
 
 class _TopBar extends StatelessWidget {
-  final String title;
+  final PdfDocument document;
   final VoidCallback onBack;
 
-  const _TopBar({required this.title, required this.onBack});
+  const _TopBar({required this.document, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +155,14 @@ class _TopBar extends StatelessWidget {
               tooltip: 'Back',
             ),
             title: Text(
-              title,
+              document.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
+            actions: [
+              DownloadButton(document: document, color: Colors.white),
+            ],
           ),
         ),
       ),

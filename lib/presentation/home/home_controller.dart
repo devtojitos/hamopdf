@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/docx_content.dart';
+import '../../domain/entities/markdown_content.dart';
 import '../../domain/entities/pdf_document.dart';
+import '../../domain/usecases/download_document_usecase.dart';
 import '../../domain/usecases/extract_docx_text_usecase.dart';
 import '../../domain/usecases/parse_docx_usecase.dart';
+import '../../domain/usecases/parse_markdown_usecase.dart';
 import '../../domain/usecases/get_recent_pdfs_usecase.dart';
 import '../../domain/usecases/pick_pdf_usecase.dart';
 import '../../domain/usecases/remove_pdf_usecase.dart';
@@ -15,6 +18,8 @@ class HomeController extends ChangeNotifier {
   final UpdateProgressUsecase _updateProgress;
   final ExtractDocxTextUsecase _extractDocxText;
   final ParseDocxUsecase _parseDocx;
+  final ParseMarkdownUsecase _parseMarkdown;
+  final DownloadDocumentUsecase _downloadDocument;
 
   HomeController({
     required GetRecentPdfsUsecase getRecentPdfs,
@@ -23,12 +28,16 @@ class HomeController extends ChangeNotifier {
     required UpdateProgressUsecase updateProgress,
     required ExtractDocxTextUsecase extractDocxText,
     required ParseDocxUsecase parseDocx,
+    required ParseMarkdownUsecase parseMarkdown,
+    required DownloadDocumentUsecase downloadDocument,
   })  : _getRecentPdfs = getRecentPdfs,
         _pickPdf = pickPdf,
         _removePdf = removePdf,
         _updateProgress = updateProgress,
         _extractDocxText = extractDocxText,
-        _parseDocx = parseDocx;
+        _parseDocx = parseDocx,
+        _parseMarkdown = parseMarkdown,
+        _downloadDocument = downloadDocument;
 
   List<PdfDocument> _recents = [];
   bool _loading = false;
@@ -80,4 +89,13 @@ class HomeController extends ChangeNotifier {
 
   /// Parses a `.docx` document into a formatted [DocxContent] tree.
   Future<DocxContent> parseDocx(String path) => _parseDocx(path);
+
+  /// Parses a Markdown document into a [MarkdownContent] tree.
+  Future<MarkdownContent> parseMarkdown(String path) => _parseMarkdown(path);
+
+  /// Saves a durable copy of the document at [path] to the device.
+  ///
+  /// Returns the saved location, or null if the user cancelled. Errors surface
+  /// as exceptions so the reader can show them next to the download button.
+  Future<String?> downloadDocument(String path) => _downloadDocument(path);
 }

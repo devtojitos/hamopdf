@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
-import '../reader/docx_reader_page.dart';
-import '../reader/reader_page.dart';
+import '../reader/reader_route.dart';
 import 'home_controller.dart';
 
 class HomePage extends StatelessWidget {
@@ -60,12 +59,9 @@ class HomePage extends StatelessWidget {
   }
 
   void _openDocument(BuildContext context, PdfDocument doc) {
-    final page = doc.type == DocType.docx
-        ? DocxReaderPage(document: doc)
-        : ReaderPage(document: doc);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => page),
+      MaterialPageRoute(builder: (_) => readerPageFor(doc)),
     ).then((_) {
       if (context.mounted) context.read<HomeController>().loadRecents();
     });
@@ -116,7 +112,8 @@ class _EmptyState extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Tap the button below to browse and open a PDF or DOCX file.',
+              'Tap the button below to browse and open a PDF, DOCX or '
+              'Markdown file.',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
@@ -226,9 +223,11 @@ class _PdfCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  doc.type == DocType.docx
-                      ? Icons.description
-                      : Icons.picture_as_pdf,
+                  switch (doc.type) {
+                    DocType.docx => Icons.description,
+                    DocType.markdown => Icons.article,
+                    DocType.pdf => Icons.picture_as_pdf,
+                  },
                   color: cs.onPrimaryContainer,
                   size: 26,
                 ),

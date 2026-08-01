@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Needed only to save downloads on Android 9 and older; from Android 10
+         onward the app writes through MediaStore, which needs no permission. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
+
     <application
         android:label="hamopdf"
         android:name="${applicationName}"
@@ -49,6 +54,30 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:scheme="file"
                     android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+            </intent-filter>
+
+            <!-- Open Markdown files. Few apps declare a markdown MIME type, so
+                 we also match on the .md / .markdown file extension. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="content" android:mimeType="text/markdown"/>
+                <data android:scheme="content" android:mimeType="text/x-markdown"/>
+                <data android:scheme="file" android:mimeType="text/markdown"/>
+                <data android:scheme="file" android:mimeType="text/x-markdown"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+                <data android:host="*"/>
+                <data android:mimeType="*/*"/>
+                <data android:pathPattern=".*\\.md"/>
+                <data android:pathPattern=".*\\..*\\.md"/>
+                <data android:pathPattern=".*\\.markdown"/>
+                <data android:pathPattern=".*\\..*\\.markdown"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
