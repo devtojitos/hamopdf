@@ -56,8 +56,26 @@
                     android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
             </intent-filter>
 
+            <!-- Open PPTX (PowerPoint) files shared from WhatsApp, Files, email, etc.
+                 Only the modern .pptx format is registered: the legacy binary
+                 .ppt format cannot be rendered. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="content"
+                    android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="file"
+                    android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation"/>
+            </intent-filter>
+
             <!-- Open Markdown files. Few apps declare a markdown MIME type, so
-                 we also match on the .md / .markdown file extension. -->
+                 we also match on the .md / .markdown file extension. The
+                 extension filter also catches .pptx files from apps that label
+                 them with a generic MIME type. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -78,6 +96,8 @@
                 <data android:pathPattern=".*\\..*\\.md"/>
                 <data android:pathPattern=".*\\.markdown"/>
                 <data android:pathPattern=".*\\..*\\.markdown"/>
+                <data android:pathPattern=".*\\.pptx"/>
+                <data android:pathPattern=".*\\..*\\.pptx"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

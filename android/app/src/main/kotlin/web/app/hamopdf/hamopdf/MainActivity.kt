@@ -107,6 +107,7 @@ class MainActivity : FlutterActivity() {
     /** Picks a file extension for the fallback name based on the shared MIME type. */
     private fun extensionFor(mimeType: String?): String = when (mimeType) {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> ".docx"
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation" -> ".pptx"
         "text/markdown", "text/x-markdown" -> ".md"
         else -> ".pdf"
     }
@@ -265,6 +266,8 @@ class MainActivity : FlutterActivity() {
         name.endsWith(".pdf", true) -> "application/pdf"
         name.endsWith(".docx", true) ->
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        name.endsWith(".pptx", true) ->
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         name.endsWith(".md", true) || name.endsWith(".markdown", true) -> "text/markdown"
         else -> "application/octet-stream"
     }

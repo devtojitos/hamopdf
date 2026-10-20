@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
 import 'download_button.dart';
+import 'share_button.dart';
 
 class ReaderPage extends StatefulWidget {
   final PdfDocument document;
@@ -64,33 +65,15 @@ class _ReaderPageState extends State<ReaderPage> {
       onPopInvokedWithResult: (_, __) => _saveProgress(),
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: GestureDetector(
-          onTap: _toggleControls,
-          child: Stack(
-            children: [
-              // PDF Viewer — fills the screen
-              PdfViewer.file(
-                widget.document.path,
-                controller: _controller,
-                params: PdfViewerParams(
-                  backgroundColor: Colors.black,
-                  onViewerReady: (document, controller) async {
-                    setState(() => _totalPages = document.pages.length);
-                    if (widget.document.lastPage > 0) {
-                      await controller.goToPage(
-                          pageNumber: widget.document.lastPage + 1);
-                    }
-                  },
-                  onPageChanged: (page) {
-                    if (page != null) setState(() => _currentPage = page);
-                  },
-                ),
-              ),
-
-              // Top overlay bar
-              AnimatedSlide(
-                offset:
-                    _showControls ? Offset.zero : const Offset(0, -1),
+        body: Column(
+          children: [
+            // Opaque top bar. The page starts below it rather than behind it;
+            // when the controls are hidden it collapses and the page grows to
+            // fill the screen.
+            ClipRect(
+              child: AnimatedAlign(
+                alignment: Alignment.bottomCenter,
+                heightFactor: _showControls ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
                 child: _TopBar(
@@ -98,21 +81,53 @@ class _ReaderPageState extends State<ReaderPage> {
                   onBack: () => Navigator.pop(context),
                 ),
               ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: _toggleControls,
+                child: Stack(
+                  children: [
+                    // PDF Viewer — fills the space below the top bar
+                    PdfViewer.file(
+                      widget.document.path,
+                      controller: _controller,
+                      params: PdfViewerParams(
+                        backgroundColor: Colors.black,
+                        onViewerReady: (document, controller) async {
+                          setState(() => _totalPages = document.pages.length);
+                          if (widget.document.lastPage > 0) {
+                            await controller.goToPage(
+                                pageNumber: widget.document.lastPage + 1);
+                          }
+                        },
+                        onPageChanged: (page) {
+                          if (page != null) setState(() => _currentPage = page);
+                        },
+                      ),
+                    ),
 
-              // Bottom overlay bar
-              AnimatedSlide(
-                offset:
-                    _showControls ? Offset.zero : const Offset(0, 1),
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: _BottomBar(
-                  currentPage: _currentPage,
-                  totalPages: _totalPages,
-                  controller: _controller,
+                    // Bottom overlay bar
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: AnimatedSlide(
+                        offset:
+                            _showControls ? Offset.zero : const Offset(0, 1),
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        child: _BottomBar(
+                          currentPage: _currentPage,
+                          totalPages: _totalPages,
+                          controller: _controller,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -131,39 +146,32 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.black87, Colors.transparent],
+    final cs = Theme.of(context).colorScheme;
+    // One solid colour behind both the status-bar inset and the bar itself.
+    return ColoredBox(
+      color: cs.surface,
+      child: SafeArea(
+        bottom: false,
+        child: AppBar(
+          backgroundColor: cs.surface,
+          foregroundColor: cs.onSurface,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: onBack,
+            tooltip: 'Back',
           ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: onBack,
-              tooltip: 'Back',
-            ),
-            title: Text(
-              document.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            actions: [
-              DownloadButton(document: document, color: Colors.white),
-            ],
+          title: Text(
+            document.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 16),
           ),
+          actions: [
+            ShareButton(document: document, color: cs.onSurface),
+            DownloadButton(document: document, color: cs.onSurface),
+          ],
         ),
       ),
     );
@@ -190,52 +198,47 @@ class _BottomBar extends StatelessWidget {
     final hasPrev = currentPage > 1;
     final hasNext = totalPages == 0 || currentPage < totalPages;
 
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [Colors.black87, Colors.transparent],
-          ),
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.black87, Colors.transparent],
         ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left,
-                      color: Colors.white, size: 28),
-                  onPressed: hasPrev
-                      ? () => controller.goToPage(pageNumber: currentPage - 1)
-                      : null,
-                  tooltip: 'Previous page',
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left,
+                    color: Colors.white, size: 28),
+                onPressed: hasPrev
+                    ? () => controller.goToPage(pageNumber: currentPage - 1)
+                    : null,
+                tooltip: 'Previous page',
+              ),
+              Expanded(
+                child: Text(
+                  totalPages > 0
+                      ? '$currentPage / $totalPages'
+                      : '$currentPage',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w500),
                 ),
-                Expanded(
-                  child: Text(
-                    totalPages > 0
-                        ? '$currentPage / $totalPages'
-                        : '$currentPage',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w500),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right,
-                      color: Colors.white, size: 28),
-                  onPressed: hasNext
-                      ? () => controller.goToPage(pageNumber: currentPage + 1)
-                      : null,
-                  tooltip: 'Next page',
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right,
+                    color: Colors.white, size: 28),
+                onPressed: hasNext
+                    ? () => controller.goToPage(pageNumber: currentPage + 1)
+                    : null,
+                tooltip: 'Next page',
+              ),
+            ],
           ),
         ),
       ),

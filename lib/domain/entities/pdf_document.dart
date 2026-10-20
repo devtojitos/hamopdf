@@ -4,11 +4,13 @@ import 'dart:convert';
 enum DocType {
   pdf,
   docx,
+  pptx,
   markdown;
 
   static DocType fromExtension(String path) {
     final lower = path.toLowerCase();
     if (lower.endsWith('.docx')) return DocType.docx;
+    if (lower.endsWith('.pptx')) return DocType.pptx;
     if (lower.endsWith('.md') || lower.endsWith('.markdown')) {
       return DocType.markdown;
     }

@@ -1,19 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:docx_to_text/docx_to_text.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/docx_content.dart';
 import '../../domain/entities/markdown_content.dart';
 import '../../domain/entities/pdf_document.dart';
+import '../../domain/entities/pptx_content.dart';
 import '../../domain/repositories/pdf_repository.dart';
 import '../datasources/docx_parser.dart';
 import '../datasources/download_datasource.dart';
 import '../datasources/local_pdf_datasource.dart';
 import '../datasources/markdown_parser.dart';
+import '../datasources/pptx_parser.dart';
+import '../datasources/share_datasource.dart';
 
 /// Runs off the UI isolate via [compute]; must be a top-level function.
 DocxContent _parseDocxBytes(Uint8List bytes) => DocxParser().parse(bytes);
+
+/// Runs off the UI isolate via [compute]; must be a top-level function.
+PptxContent _parsePptxBytes(Uint8List bytes) => PptxParser().parse(bytes);
 
 /// Runs off the UI isolate via [compute]; must be a top-level function.
 MarkdownContent _parseMarkdownSource(String source) =>
@@ -22,11 +29,14 @@ MarkdownContent _parseMarkdownSource(String source) =>
 class PdfRepositoryImpl implements PdfRepository {
   final LocalPdfDatasource _datasource;
   final DownloadDatasource _downloads;
+  final ShareDatasource _sharing;
 
   const PdfRepositoryImpl(
     this._datasource, {
     DownloadDatasource downloads = const DownloadDatasource(),
-  }) : _downloads = downloads;
+    ShareDatasource sharing = const ShareDatasource(),
+  })  : _downloads = downloads,
+        _sharing = sharing;
 
   @override
   Future<List<PdfDocument>> getRecentDocuments() =>
@@ -48,7 +58,7 @@ class PdfRepositoryImpl implements PdfRepository {
   Future<String?> pickDocumentFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'docx', 'md', 'markdown'],
+      allowedExtensions: ['pdf', 'docx', 'pptx', 'md', 'markdown'],
       allowMultiple: false,
     );
     return result?.files.single.path;
@@ -57,6 +67,13 @@ class PdfRepositoryImpl implements PdfRepository {
   @override
   Future<String?> downloadDocument(String path) =>
       _downloads.saveToDownloads(path);
+
+  @override
+  bool get canShareDocuments => _sharing.isSupported;
+
+  @override
+  Future<void> shareDocument(String path, {Rect? origin}) =>
+      _sharing.share(path, origin: origin);
 
   @override
   Future<String> extractDocxText(String path) async {
@@ -68,6 +85,12 @@ class PdfRepositoryImpl implements PdfRepository {
   Future<DocxContent> parseDocx(String path) async {
     final bytes = await File(path).readAsBytes();
     return compute(_parseDocxBytes, bytes);
+  }
+
+  @override
+  Future<PptxContent> parsePptx(String path) async {
+    final bytes = await File(path).readAsBytes();
+    return compute(_parsePptxBytes, bytes);
   }
 
   @override

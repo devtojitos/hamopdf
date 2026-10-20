@@ -8,6 +8,7 @@ import '../../domain/entities/markdown_content.dart';
 import '../../domain/entities/pdf_document.dart';
 import '../home/home_controller.dart';
 import 'download_button.dart';
+import 'share_button.dart';
 
 /// Renders a Markdown document as a formatted, readable page.
 ///
@@ -93,6 +94,7 @@ class _MarkdownReaderPageState extends State<MarkdownReaderPage> {
             tooltip: 'Larger text',
             onPressed: () => _changeScale(0.1),
           ),
+          ShareButton(document: widget.document),
           DownloadButton(document: widget.document),
         ],
       ),

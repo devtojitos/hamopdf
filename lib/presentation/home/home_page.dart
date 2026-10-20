@@ -112,8 +112,8 @@ class _EmptyState extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Tap the button below to browse and open a PDF, DOCX or '
-              'Markdown file.',
+              'Tap the button below to browse and open a PDF, Word, '
+              'PowerPoint or Markdown file.',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
@@ -225,6 +225,7 @@ class _PdfCard extends StatelessWidget {
                 child: Icon(
                   switch (doc.type) {
                     DocType.docx => Icons.description,
+                    DocType.pptx => Icons.slideshow,
                     DocType.markdown => Icons.article,
                     DocType.pdf => Icons.picture_as_pdf,
                   },

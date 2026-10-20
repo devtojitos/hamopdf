@@ -6,9 +6,11 @@ import '../domain/usecases/download_document_usecase.dart';
 import '../domain/usecases/extract_docx_text_usecase.dart';
 import '../domain/usecases/parse_docx_usecase.dart';
 import '../domain/usecases/parse_markdown_usecase.dart';
+import '../domain/usecases/parse_pptx_usecase.dart';
 import '../domain/usecases/get_recent_pdfs_usecase.dart';
 import '../domain/usecases/pick_pdf_usecase.dart';
 import '../domain/usecases/remove_pdf_usecase.dart';
+import '../domain/usecases/share_document_usecase.dart';
 import '../domain/usecases/update_progress_usecase.dart';
 import 'home/home_controller.dart';
 import 'home/home_page.dart';
@@ -30,8 +32,10 @@ class HamoPdfApp extends StatelessWidget {
         updateProgress: UpdateProgressUsecase(repo),
         extractDocxText: ExtractDocxTextUsecase(repo),
         parseDocx: ParseDocxUsecase(repo),
+        parsePptx: ParsePptxUsecase(repo),
         parseMarkdown: ParseMarkdownUsecase(repo),
         downloadDocument: DownloadDocumentUsecase(repo),
+        shareDocument: ShareDocumentUsecase(repo),
       )..loadRecents(),
       child: MaterialApp(
         title: 'HamoPDF',
